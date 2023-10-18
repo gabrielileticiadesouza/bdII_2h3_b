@@ -1,59 +1,16 @@
-/*Faixa Inteira*/
-select
-	*
-from 
-	empregado
-where
-	cod_emp between 5 and 11;
-    
-/*Espaço de Amostras*/
-
-select
-	*
-from 
-	empregado
-where
-	cod_emp /*not*/ in(5, 6, 2);
-
-/*Formatos de Data*/
-
-select
-	nome as empregado,
-    salario as renda,
-    format((datediff(now(), dt_nascimento)/365),0) as idade,
-    format((datediff(now(), dt_admissao)/365),0)as tempo_empresa
-from
-	empregado;
-/*Acumulador de Valor*/
-select
-    max(format((datediff(now(), dt_admissao)/365),0)) as tempo_empresa
-from 
-	empregado;
-select
-    min(format((datediff(now(), dt_admissao)/365),0)) as tempo_empresa
-from 
-	empregado;
-    
-/*Filtro Composto*/
-
-select
-	nome as empregado,
-    salario as renda,
-    sexo as genero,
-    format((datediff(now(), dt_nascimento)/365),0) as idade
-from
-	empregado
-where
-	format((datediff(now(), dt_admissao)/365),0)=
-    (select max(format((datediff(now(), dt_admissao)/365),0)) as tempo_empresa from empregado);
-
-select
-	nome as empregado,
-    salario as renda,
-    sexo as genero,
-    format((datediff(now(), dt_nascimento)/365),0) as idade
-from
-	empregado
-where
-	format((datediff(now(), dt_admissao)/365),0)=
-    (select min(format((datediff(now(), dt_admissao)/365),0)) as tempo_empresa from empregado);
+SELECT 
+	e.nome as empregado, 
+    e.civil as est_civil,
+	format(datediff(now(),e.dt_nascimento)/365,0) as emp_idade,
+	e.salario as renda,
+	count(d.cod_dep) as dependentes,
+    concat("R$ ",format(if (e.salario<=2112, 0,
+		if(e.salario>2112 and e.salario<=2826.65,((e.salario * 13.3) *0.075),
+			if(e.salario>2826.65 and e.salario<=3751.05,((e.salario * 13.3)*0.15),
+            if(e.salario>3751.05 and e.salario<=4664.68,((e.salario * 13.3) * 0.225),((e.salario * 13.3) * 0.275))))
+	),2)) 
+    as Imposto
+ FROM empregado e 
+ LEFT JOIN dependente d
+ on e.cod_emp = d.cod_emp
+ group by e.nome, e.civil, e.salario, e.dt_nascimento;
